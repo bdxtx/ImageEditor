@@ -1,4 +1,4 @@
-package com.ganjie.ImageEditor;
+package com.ganjie.image_editor;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
