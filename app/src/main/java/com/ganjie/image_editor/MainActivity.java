@@ -1,6 +1,7 @@
 package com.ganjie.image_editor;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -26,6 +27,9 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import cn.hzw.doodle.DoodleActivity;
+import cn.hzw.doodle.DoodleParams;
+import cn.hzw.doodle.DoodleView;
 
 public class MainActivity extends BaseActivity {
     @BindView(R.id.img_show)
@@ -34,6 +38,7 @@ public class MainActivity extends BaseActivity {
     private String imgUrl;
     private static final int REQUEST_CODE_SELECT=1;
     public static final int ACTION_REQUEST_EDITIMAGE = 9;
+    public static final int REQ_CODE_DOODLE = 101;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,8 +61,21 @@ public class MainActivity extends BaseActivity {
                 if (TextUtils.isEmpty(imgUrl)){
                     Toast.makeText(this,"请先选择一张图片",Toast.LENGTH_LONG).show();
                 }else {
-                    File outputFile= FileUtils.genEditFile();
-                    EditImageActivity.start(this,imgUrl,outputFile.getAbsolutePath(),ACTION_REQUEST_EDITIMAGE);
+//                    File outputFile= FileUtils.genEditFile();
+//                    EditImageActivity.start(this,imgUrl,outputFile.getAbsolutePath(),ACTION_REQUEST_EDITIMAGE);
+                    // 涂鸦参数
+                    DoodleParams params = new DoodleParams();
+                    params.mIsFullScreen = true;
+                    // 图片路径
+                    params.mImagePath = imgUrl;
+                    // 初始画笔大小
+                    params.mPaintUnitSize = DoodleView.DEFAULT_SIZE;
+                    // 画笔颜色
+                    params.mPaintColor = Color.RED;
+                    // 是否支持缩放item
+                    params.mSupportScaleItem = true;
+                    // 启动涂鸦页面
+                    ImageEditActivity.startActivityForResult(MainActivity.this, params, REQ_CODE_DOODLE);
                 }
                 break;
             case R.id.img_photo:

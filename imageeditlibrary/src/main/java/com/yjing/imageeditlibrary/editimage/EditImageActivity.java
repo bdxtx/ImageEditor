@@ -32,6 +32,9 @@ import com.yjing.imageeditlibrary.editimage.view.imagezoom.ImageViewTouch;
 import com.yjing.imageeditlibrary.editimage.view.imagezoom.ImageViewTouchBase;
 import com.yjing.imageeditlibrary.editimage.view.mosaic.MosaicView;
 
+import butterknife.ButterKnife;
+import butterknife.Unbinder;
+
 /**
  * 图片编辑 主页面
  * 包含 1.贴图 2.滤镜 3.剪裁 4.底图旋转 功能
@@ -73,6 +76,7 @@ public class EditImageActivity extends BaseActivity {
     public SaveMode.EditFactory editFactory;
     public View fl_main_menu;
     public View banner;
+    private Unbinder unbinder;
 
     /**
      * @param context
@@ -95,6 +99,7 @@ public class EditImageActivity extends BaseActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        unbinder = ButterKnife.bind(this);
         checkInitImageLoader();
         setContentView(R.layout.activity_image_edit);
         initView();
@@ -371,6 +376,7 @@ public class EditImageActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        unbinder.unbind();
         if (mLoadImageTask != null) {
             mLoadImageTask.cancel(true);
         }
@@ -450,5 +456,7 @@ public class EditImageActivity extends BaseActivity {
             }
         }
     }
+
+
 
 }

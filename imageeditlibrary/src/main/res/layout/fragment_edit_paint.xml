@@ -1,67 +1,164 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/dp_50"
+    android:layout_height="wrap_content"
     android:orientation="vertical">
-
+    <LinearLayout
+        android:id="@+id/ll_color_picker"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_50"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        android:gravity="center_vertical">
+        <ImageView
+            android:id="@+id/img_white"
+            android:layout_width="@dimen/dp_22"
+            android:layout_height="@dimen/dp_22"
+            android:layout_marginLeft="@dimen/dp_32"
+            android:src="@drawable/color_white"/>
+        <ImageView
+            android:id="@+id/img_black"
+            android:layout_width="@dimen/dp_22"
+            android:layout_height="@dimen/dp_22"
+            android:layout_marginLeft="@dimen/dp_19"
+            android:src="@drawable/color_black"/>
+        <ImageView
+            android:id="@+id/img_red"
+            android:layout_width="@dimen/dp_22"
+            android:layout_height="@dimen/dp_22"
+            android:layout_marginLeft="@dimen/dp_19"
+            android:src="@drawable/color_selector"/>
+        <ImageView
+            android:id="@+id/img_yellow"
+            android:layout_width="@dimen/dp_22"
+            android:layout_height="@dimen/dp_22"
+            android:layout_marginLeft="@dimen/dp_19"
+            android:src="@drawable/color_yellow"/>
+        <ImageView
+            android:id="@+id/img_green"
+            android:layout_width="@dimen/dp_22"
+            android:layout_height="@dimen/dp_22"
+            android:layout_marginLeft="@dimen/dp_19"
+            android:src="@drawable/color_green"/>
+        <ImageView
+            android:id="@+id/img_blue"
+            android:layout_width="@dimen/dp_22"
+            android:layout_height="@dimen/dp_22"
+            android:layout_marginLeft="@dimen/dp_19"
+            android:src="@drawable/color_blue"/>
+        <ImageView
+            android:id="@+id/img_purple"
+            android:layout_width="@dimen/dp_22"
+            android:layout_height="@dimen/dp_22"
+            android:layout_marginLeft="@dimen/dp_19"
+            android:src="@drawable/color_purple"/>
+        <ImageView
+            android:id="@+id/img_pink"
+            android:layout_width="@dimen/dp_22"
+            android:layout_height="@dimen/dp_22"
+            android:layout_marginLeft="@dimen/dp_19"
+            android:layout_marginRight="@dimen/dp_32"
+            android:src="@drawable/color_pink"/>
+    </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
-
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="@dimen/bottom_tool_detail_height"
-            android:gravity="center_vertical"
-            android:orientation="vertical">
-
-            <com.yjing.imageeditlibrary.editimage.view.PaintModeView
-                android:id="@+id/paint_thumb"
-                android:layout_width="30dp"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:layout_marginRight="10dp" />
-
-        </LinearLayout>
-
-        <LinearLayout
+        android:layout_height="@dimen/dp_50"
+        android:orientation="horizontal"
+        android:layout_marginLeft="@dimen/dp_16"
+        android:layout_marginRight="@dimen/dp_16"
+        android:gravity="center_vertical">
+        <ImageView
             android:layout_width="0dp"
-            android:layout_height="@dimen/bottom_tool_detail_height"
             android:layout_weight="1"
-            android:gravity="center_vertical"
-            android:orientation="vertical">
-
-            <com.yjing.imageeditlibrary.editimage.view.ColorSeekBar
-                android:id="@+id/colorSlider"
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                app:barHeight="8dp"
-                app:colorSeeds="@array/material_colors" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="@dimen/bottom_tool_detail_height"
-            android:gravity="center_vertical"
-            android:orientation="vertical">
-
-            <ImageView
-                android:id="@+id/paint_revoke"
-                android:layout_width="25dp"
-                android:layout_height="25dp"
-                android:layout_margin="5dp"
-                android:src="@drawable/edit_image_revoke_btn" />
-        </LinearLayout>
-
+            android:layout_height="wrap_content"
+            android:src="@drawable/line"/>
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:src="@drawable/rectangle_un"/>
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:src="@drawable/circular_un"/>
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:src="@drawable/arrow_un"/>
+        <ImageView
+            android:id="@+id/color_selector"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:src="@drawable/color_selector"/>
+        <ImageView
+            android:id="@+id/return_last"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:src="@drawable/return_last"/>
 
     </LinearLayout>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="0.5dp"
-        android:background="@color/line__spilt" />
+    <!--<LinearLayout-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:gravity="center_vertical"-->
+        <!--android:orientation="horizontal">-->
+
+
+        <!--<LinearLayout-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="@dimen/bottom_tool_detail_height"-->
+            <!--android:gravity="center_vertical"-->
+            <!--android:orientation="vertical">-->
+
+            <!--<com.yjing.imageeditlibrary.editimage.view.PaintModeView-->
+                <!--android:id="@+id/paint_thumb"-->
+                <!--android:layout_width="30dp"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_marginLeft="10dp"-->
+                <!--android:layout_marginRight="10dp" />-->
+
+        <!--</LinearLayout>-->
+
+        <!--<LinearLayout-->
+            <!--android:layout_width="0dp"-->
+            <!--android:layout_height="@dimen/bottom_tool_detail_height"-->
+            <!--android:layout_weight="1"-->
+            <!--android:gravity="center_vertical"-->
+            <!--android:orientation="vertical">-->
+
+            <!--<com.yjing.imageeditlibrary.editimage.view.ColorSeekBar-->
+                <!--android:id="@+id/colorSlider"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="40dp"-->
+                <!--app:barHeight="8dp"-->
+                <!--app:colorSeeds="@array/material_colors" />-->
+
+        <!--</LinearLayout>-->
+
+        <!--<LinearLayout-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="@dimen/bottom_tool_detail_height"-->
+            <!--android:gravity="center_vertical"-->
+            <!--android:orientation="vertical">-->
+
+            <!--<ImageView-->
+                <!--android:id="@+id/paint_revoke"-->
+                <!--android:layout_width="25dp"-->
+                <!--android:layout_height="25dp"-->
+                <!--android:layout_margin="5dp"-->
+                <!--android:src="@drawable/edit_image_revoke_btn" />-->
+        <!--</LinearLayout>-->
+
+
+    <!--</LinearLayout>-->
+
+    <!--<View-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="0.5dp"-->
+        <!--android:background="@color/line__spilt" />-->
 </LinearLayout>
