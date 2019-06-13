@@ -2,18 +2,21 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/edit_bg"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <ImageView
+            android:id="@+id/back_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:src="@drawable/back"
             android:layout_marginLeft="@dimen/dp_14"/>
         <TextView
+            android:id="@+id/save_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="保存"
@@ -27,7 +30,46 @@
         android:layout_width="@dimen/dp_375"
         android:layout_height="@dimen/dp_375"
         android:layout_centerInParent="true"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_50"
+        android:orientation="horizontal"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="@dimen/dp_20"
+        android:gravity="center_vertical">
+        <ImageView
+            android:id="@+id/brush"
+            android:layout_width="@dimen/dp_20"
+            android:layout_height="@dimen/dp_20"
+            android:src="@drawable/brush"
+            android:layout_marginLeft="@dimen/dp_34"/>
 
+        <ImageView
+            android:id="@+id/prettify"
+            android:layout_width="@dimen/dp_20"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/dp_52"
+            android:src="@drawable/prettify_un" />
+
+        <ImageView
+            android:id="@+id/text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/dp_53"
+            android:src="@drawable/text_un" />
+        <ImageView
+            android:id="@+id/mosaic"
+            android:layout_width="@dimen/dp_20"
+            android:layout_height="@dimen/dp_20"
+            android:layout_marginLeft="@dimen/dp_53"
+            android:src="@drawable/mosaic_un"/>
+        <ImageView
+            android:id="@+id/screenshot"
+            android:layout_width="@dimen/dp_20"
+            android:layout_height="@dimen/dp_20"
+            android:layout_marginLeft="@dimen/dp_50"
+            android:src="@drawable/screenshot_un"/>
+    </LinearLayout>
     <LinearLayout
         android:id="@+id/menu"
         android:layout_width="match_parent"
@@ -37,23 +79,27 @@
         android:layout_marginRight="@dimen/dp_16"
         android:layout_alignParentBottom="true"
         android:gravity="center_vertical"
-        android:layout_marginBottom="@dimen/dp_20">
+        android:layout_marginBottom="@dimen/dp_70">
         <ImageView
+            android:id="@+id/btn_hand_write"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:src="@drawable/line"/>
         <ImageView
+            android:id="@+id/btn_holl_rect"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:src="@drawable/rectangle_un"/>
         <ImageView
+            android:id="@+id/btn_holl_circle"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:src="@drawable/circular_un"/>
         <ImageView
+            android:id="@+id/btn_arrow"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
@@ -73,12 +119,50 @@
 
     </LinearLayout>
     <LinearLayout
+        android:id="@+id/mosaic_menu"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_50"
+        android:orientation="horizontal"
+        android:layout_marginLeft="@dimen/dp_16"
+        android:layout_marginRight="@dimen/dp_16"
+        android:layout_alignParentBottom="true"
+        android:gravity="center_vertical"
+        android:visibility="gone"
+        android:layout_marginBottom="@dimen/dp_70">
+        <ImageView
+            android:id="@+id/mosaic_one"
+            android:layout_width="@dimen/dp_23"
+            android:layout_height="@dimen/dp_23"
+            android:layout_marginLeft="@dimen/dp_51"
+            android:src="@drawable/mosaic_one"/>
+        <ImageView
+            android:id="@+id/mosaic_two"
+            android:layout_width="@dimen/dp_25"
+            android:layout_height="@dimen/dp_27"
+            android:layout_marginLeft="@dimen/dp_59"
+            android:src="@drawable/mosaic_two_un"/>
+        <ImageView
+            android:id="@+id/mosaic_three"
+            android:layout_width="@dimen/dp_26"
+            android:layout_height="@dimen/dp_24"
+            android:layout_marginLeft="@dimen/dp_58"
+            android:src="@drawable/mosaic_three_un"/>
+        <ImageView
+            android:id="@+id/return_last_2"
+            android:layout_width="@dimen/dp_23"
+            android:layout_height="@dimen/dp_19"
+            android:layout_marginLeft="@dimen/dp_59"
+            android:src="@drawable/return_last"/>
+
+    </LinearLayout>
+    <LinearLayout
         android:id="@+id/ll_color_picker"
         android:layout_width="match_parent"
         android:layout_height="@dimen/dp_50"
         android:orientation="horizontal"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="@dimen/dp_70"
+        android:layout_marginBottom="@dimen/dp_120"
+        android:visibility="gone"
         android:gravity="center_vertical">
         <ImageView
             android:id="@+id/img_white"

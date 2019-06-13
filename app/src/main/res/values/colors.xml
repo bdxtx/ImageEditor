@@ -5,5 +5,13 @@
     <color name="colorAccent">#D81B60</color>
 
     <color name="transparent">#00000000</color>
+    <color name="white">#ffffff</color>
+    <color name="black">#000000</color>
+    <color name="red">#F1340E</color>
+    <color name="yellow">#FCB549</color>
+    <color name="green">#00D14D</color>
+    <color name="blue_mine">#1879FB</color>
+    <color name="purple">#8F57FA</color>
+    <color name="pink">#F524B6</color>
     <color name="blue">#0000FF</color>
 </resources>

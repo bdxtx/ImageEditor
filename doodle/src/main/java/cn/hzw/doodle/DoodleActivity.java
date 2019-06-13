@@ -1,28 +1,25 @@
-package com.ganjie.image_editor;
+package cn.hzw.doodle;
 
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.PersistableBundle;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.Gravity;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -34,23 +31,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import butterknife.BindView;
-import butterknife.OnClick;
 import cn.forward.androids.utils.ImageUtils;
 import cn.forward.androids.utils.LogUtil;
+import cn.forward.androids.utils.StatusBarUtil;
 import cn.forward.androids.utils.Util;
-import cn.hzw.doodle.DoodleActivity;
-import cn.hzw.doodle.DoodleBitmap;
-import cn.hzw.doodle.DoodleColor;
-import cn.hzw.doodle.DoodleOnTouchGestureListener;
-import cn.hzw.doodle.DoodleParams;
-import cn.hzw.doodle.DoodlePath;
-import cn.hzw.doodle.DoodlePen;
-import cn.hzw.doodle.DoodleShape;
-import cn.hzw.doodle.DoodleText;
-import cn.hzw.doodle.DoodleTouchDetector;
-import cn.hzw.doodle.DoodleView;
-import cn.hzw.doodle.IDoodleListener;
 import cn.hzw.doodle.core.IDoodle;
 import cn.hzw.doodle.core.IDoodleColor;
 import cn.hzw.doodle.core.IDoodleItemListener;
@@ -58,10 +42,16 @@ import cn.hzw.doodle.core.IDoodlePen;
 import cn.hzw.doodle.core.IDoodleSelectableItem;
 import cn.hzw.doodle.core.IDoodleShape;
 import cn.hzw.doodle.core.IDoodleTouchDetector;
+import cn.hzw.doodle.dialog.ColorPickerDialog;
 import cn.hzw.doodle.dialog.DialogController;
 import cn.hzw.doodle.imagepicker.ImageSelectorView;
 
-public class ImageEditActivity extends BaseActivity implements TextDialog.OnclickListener {
+/**
+ * 涂鸦界面，根据DoodleView的接口，提供页面交互
+ * （这边代码和ui比较粗糙，主要目的是告诉大家DoodleView的接口具体能实现什么功能，实际需求中的ui和交互需另提别论）
+ * Created by huangziwei(154330138@qq.com) on 2016/9/3.
+ */
+public class DoodleActivity extends Activity {
 
     public static final String TAG = "Doodle";
     public final static int DEFAULT_MOSAIC_SIZE = 20; // 默认马赛克大小
@@ -70,38 +60,7 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
     public final static int DEFAULT_BITMAP_SIZE = 80; // 默认贴图大小
 
     public static final int RESULT_ERROR = -111; // 出现错误
-    public static final int INPUT = 303; // 出现错误
 
-    @BindView(R.id.ll_color_picker)
-    LinearLayout ll_color_picker;
-    @BindView(R.id.menu)
-    LinearLayout menu;
-    @BindView(R.id.mosaic_menu)
-    LinearLayout mosaic_menu;
-    @BindView(R.id.color_selector)
-    ImageView color_selector;
-    @BindView(R.id.btn_arrow)
-    ImageView btn_arrow;
-    @BindView(R.id.btn_holl_rect)
-    ImageView btn_holl_rect;
-    @BindView(R.id.btn_hand_write)
-    ImageView btn_hand_write;
-    @BindView(R.id.btn_holl_circle)
-    ImageView btn_holl_circle;
-    @BindView(R.id.brush)
-    ImageView brush;
-    @BindView(R.id.prettify)
-    ImageView prettify;
-    @BindView(R.id.text)
-    ImageView text;
-    @BindView(R.id.mosaic)
-    ImageView mosaic;
-    @BindView(R.id.screenshot)
-    ImageView screenshot;
-    @BindView(R.id.edit_bg)
-    RelativeLayout edit_bg;
-
-    private int color;
     /**
      * 启动涂鸦界面
      *
@@ -111,8 +70,8 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
      * @see DoodleParams
      */
     public static void startActivityForResult(Activity activity, DoodleParams params, int requestCode) {
-        Intent intent = new Intent(activity, ImageEditActivity.class);
-        intent.putExtra(KEY_PARAMS, params);
+        Intent intent = new Intent(activity, DoodleActivity.class);
+        intent.putExtra(DoodleActivity.KEY_PARAMS, params);
         activity.startActivityForResult(intent, requestCode);
     }
 
@@ -135,10 +94,7 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
     }
 
     /**
-     *
-     * @param activity
-     * @param imagePath
-     * @param requestCode
+     * {@link DoodleActivity#startActivityForResult(Activity, String, String, boolean, int)}
      */
     @Deprecated
     public static void startActivityForResult(Activity activity, String imagePath, int requestCode) {
@@ -151,8 +107,8 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
     public static final String KEY_IMAGE_PATH = "key_image_path";
 
     private String mImagePath;
-    @BindView(R.id.doodle_container)
-    FrameLayout mFrameLayout;
+
+    private FrameLayout mFrameLayout;
     private IDoodle mDoodle;
     private DoodleView mDoodleView;
 
@@ -162,6 +118,7 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
     private View mSelectedEditContainer;
     private TextView mItemScaleTextView;
     private View mBtnColor, mColorContainer;
+    private SeekBar mEditSizeSeekBar;
     private View mShapeContainer, mPenContainer, mSizeContainer;
     private View mBtnUndo;
     private View mMosaicMenu;
@@ -194,17 +151,9 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-    }
-
-    @Override
-    public int getLayoutId() {
-        return R.layout.activity_image_edit;
-    }
-
-    @Override
-    public void initView() {
+        StatusBarUtil.setStatusBarTranslucent(this, true, false);
         if (mDoodleParams == null) {
             mDoodleParams = getIntent().getExtras().getParcelable(KEY_PARAMS);
         }
@@ -221,6 +170,10 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
             return;
         }
 
+        LogUtil.d("TAG", mImagePath);
+        if (mDoodleParams.mIsFullScreen) {
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
         Bitmap bitmap = ImageUtils.createBitmapFromPath(mImagePath, this);
         if (bitmap == null) {
             LogUtil.e("TAG", "bitmap is null!");
@@ -228,13 +181,17 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
             return;
         }
 
-         /*
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        setContentView(R.layout.doodle_layout);
+        mFrameLayout = (FrameLayout) findViewById(R.id.doodle_container);
+
+        /*
         Whether or not to optimize drawing, it is suggested to open, which can optimize the drawing speed and performance.
         Note: When item is selected for editing after opening, it will be drawn at the top level, and not at the corresponding level until editing is completed.
         是否优化绘制，建议开启，可优化绘制速度和性能.
         注意：开启后item被选中编辑时时会绘制在最上面一层，直到结束编辑后才绘制在相应层级
          */
-        mDoodle = mDoodleView = new DoodleView(this, bitmap, mDoodleParams.mOptimizeDrawing, new IDoodleListener() {
+        mDoodle = mDoodleView = new DoodleViewWrapper(this, bitmap, mDoodleParams.mOptimizeDrawing, new IDoodleListener() {
             @Override
             public void onSaved(IDoodle doodle, Bitmap bitmap, Runnable callback) { // 保存图片为jpg格式
                 File doodleFile = null;
@@ -282,7 +239,7 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
 
             @Override
             public void onReady(IDoodle doodle) {
-//                mEditSizeSeekBar.setMax(Math.min(mDoodleView.getWidth(), mDoodleView.getHeight()));
+                mEditSizeSeekBar.setMax(Math.min(mDoodleView.getWidth(), mDoodleView.getHeight()));
 
                 float size = mDoodleParams.mPaintUnitSize > 0 ? mDoodleParams.mPaintUnitSize * mDoodle.getUnitSize() : 0;
                 if (size <= 0) {
@@ -294,9 +251,8 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
                 mDoodle.setPen(DoodlePen.BRUSH);
                 mDoodle.setShape(DoodleShape.HAND_WRITE);
                 mDoodle.setColor(new DoodleColor(mDoodleParams.mPaintColor));
-                color=mDoodleParams.mPaintColor;
                 if (mDoodleParams.mZoomerScale <= 0) {
-                    findViewById(cn.hzw.doodle.R.id.btn_zoomer).setVisibility(View.GONE);
+                    findViewById(R.id.btn_zoomer).setVisibility(View.GONE);
                 }
                 mDoodle.setZoomerScale(mDoodleParams.mZoomerScale);
                 mTouchGestureListener.setSupportScaleItem(mDoodleParams.mSupportScaleItem);
@@ -324,8 +280,8 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
                         return;
                     }
                     if (property == IDoodleItemListener.PROPERTY_SCALE) {
-//                        mItemScaleTextView.setText(
-//                                (int) (mTouchGestureListener.getSelectedItem().getScale() * 100 + 0.5f) + "%");
+                        mItemScaleTextView.setText(
+                                (int) (mTouchGestureListener.getSelectedItem().getScale() * 100 + 0.5f) + "%");
                     }
                 }
             };
@@ -346,6 +302,10 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
                     mDoodle.setPen(selectableItem.getPen());
                     mDoodle.setColor(selectableItem.getColor());
                     mDoodle.setSize(selectableItem.getSize());
+                    mEditSizeSeekBar.setProgress((int) selectableItem.getSize());
+                    mSelectedEditContainer.setVisibility(View.VISIBLE);
+                    mSizeContainer.setVisibility(View.VISIBLE);
+                    mItemScaleTextView.setText((int) (selectableItem.getScale() * 100 + 0.5f) + "%");
                     selectableItem.addItemListener(mIDoodleItemListener);
                 } else {
                     selectableItem.removeItemListener(mIDoodleItemListener);
@@ -380,11 +340,11 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
             @Override
             public void setSupportScaleItem(boolean supportScaleItem) {
                 super.setSupportScaleItem(supportScaleItem);
-//                if (supportScaleItem) {
-//                    mItemScaleTextView.setVisibility(View.VISIBLE);
-//                } else {
-//                    mItemScaleTextView.setVisibility(View.GONE);
-//                }
+                if (supportScaleItem) {
+                    mItemScaleTextView.setVisibility(View.VISIBLE);
+                } else {
+                    mItemScaleTextView.setVisibility(View.GONE);
+                }
             }
         };
 
@@ -396,6 +356,7 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
         mDoodle.setDoodleMinScale(mDoodleParams.mMinScale);
         mDoodle.setDoodleMaxScale(mDoodleParams.mMaxScale);
 
+        initView();
     }
 
     private boolean canChangeColor(IDoodlePen pen) {
@@ -455,172 +416,350 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
             }
         });
     }
-    @OnClick({R.id.color_selector,R.id.img_white,R.id.img_black,R.id.img_red,R.id.img_yellow,R.id.img_green,R.id.img_blue,
-            R.id.img_purple,R.id.img_pink,R.id.return_last,R.id.btn_arrow,R.id.btn_hand_write,R.id.btn_holl_circle,R.id.btn_holl_rect
-    ,R.id.save_btn,R.id.back_btn,R.id.brush,R.id.prettify,R.id.mosaic,R.id.text,R.id.screenshot,R.id.return_last_2,R.id.mosaic_one,R.id.mosaic_two})
-    public void onClick(View view){
-        switch (view.getId()){
-            case R.id.color_selector:
-                ll_color_picker.setVisibility(View.VISIBLE);
-                break;
-            case R.id.img_white:
-                ll_color_picker.setVisibility(View.GONE);
-                color_selector.setImageDrawable(getResources().getDrawable(R.drawable.color_white));
-                mDoodle.setColor(new DoodleColor(Color.WHITE));
-                color=Color.WHITE;
-                break;
-            case R.id.img_black:
-                ll_color_picker.setVisibility(View.GONE);
-                color_selector.setImageDrawable(getResources().getDrawable(R.drawable.color_black));
-                mDoodle.setColor(new DoodleColor(Color.BLACK));
-                color=Color.BLACK;
-                break;
-            case R.id.img_red:
-                ll_color_picker.setVisibility(View.GONE);
-                color_selector.setImageDrawable(getResources().getDrawable(R.drawable.color_selector));
-                mDoodle.setColor(new DoodleColor(Color.parseColor("#F1340E")));
-                color=Color.parseColor("#F1340E");
-                break;
-            case R.id.img_yellow:
-                ll_color_picker.setVisibility(View.GONE);
-                color_selector.setImageDrawable(getResources().getDrawable(R.drawable.color_yellow));
-                mDoodle.setColor(new DoodleColor(Color.parseColor("#FCB549")));
-                color=Color.parseColor("#FCB549");
-                break;
-            case R.id.img_green:
-                ll_color_picker.setVisibility(View.GONE);
-                color_selector.setImageDrawable(getResources().getDrawable(R.drawable.color_green));
-                mDoodle.setColor(new DoodleColor(Color.parseColor("#00D14D")));
-                color=Color.parseColor("#00D14D");
-                break;
-            case R.id.img_blue:
-                ll_color_picker.setVisibility(View.GONE);
-                color_selector.setImageDrawable(getResources().getDrawable(R.drawable.color_blue));
-                mDoodle.setColor(new DoodleColor(Color.parseColor("#1879FB")));
-                color=Color.parseColor("#1879FB");
-                break;
-            case R.id.img_purple:
-                ll_color_picker.setVisibility(View.GONE);
-                color_selector.setImageDrawable(getResources().getDrawable(R.drawable.color_purple));
-                mDoodle.setColor(new DoodleColor(Color.parseColor("#8F57FA")));
-                color=Color.parseColor("#8F57FA");
-                break;
-            case R.id.img_pink:
-                ll_color_picker.setVisibility(View.GONE);
-                color_selector.setImageDrawable(getResources().getDrawable(R.drawable.color_pink));
-                mDoodle.setColor(new DoodleColor(Color.parseColor("#F524B6")));
-                color=Color.parseColor("#F524B6");
-                break;
-            case R.id.return_last:
-                mDoodle.undo();
-                break;
-            case R.id.return_last_2:
-                mDoodle.undo();
-                break;
-            case R.id.btn_arrow:
-                mDoodle.setShape(DoodleShape.ARROW);
-                btn_hand_write.setImageDrawable(getResources().getDrawable(R.drawable.line_un));
-                btn_arrow.setImageDrawable(getResources().getDrawable(R.drawable.arrow));
-                btn_holl_circle.setImageDrawable(getResources().getDrawable(R.drawable.circular_un));
-                btn_holl_rect.setImageDrawable(getResources().getDrawable(R.drawable.rectangle_un));
-                break;
-            case R.id.btn_holl_rect:
-                mDoodle.setShape(DoodleShape.HOLLOW_RECT);
-                btn_hand_write.setImageDrawable(getResources().getDrawable(R.drawable.line_un));
-                btn_arrow.setImageDrawable(getResources().getDrawable(R.drawable.arrow_un));
-                btn_holl_circle.setImageDrawable(getResources().getDrawable(R.drawable.circular_un));
-                btn_holl_rect.setImageDrawable(getResources().getDrawable(R.drawable.rectangle));
-                break;
-            case R.id.btn_holl_circle:
-                mDoodle.setShape(DoodleShape.HOLLOW_CIRCLE);
-                btn_hand_write.setImageDrawable(getResources().getDrawable(R.drawable.line_un));
-                btn_arrow.setImageDrawable(getResources().getDrawable(R.drawable.arrow_un));
-                btn_holl_circle.setImageDrawable(getResources().getDrawable(R.drawable.circular));
-                btn_holl_rect.setImageDrawable(getResources().getDrawable(R.drawable.rectangle_un));
-                break;
-            case R.id.btn_hand_write:
-                mDoodle.setShape(DoodleShape.HAND_WRITE);
-                btn_hand_write.setImageDrawable(getResources().getDrawable(R.drawable.line));
-                btn_arrow.setImageDrawable(getResources().getDrawable(R.drawable.arrow_un));
-                btn_holl_circle.setImageDrawable(getResources().getDrawable(R.drawable.circular_un));
-                btn_holl_rect.setImageDrawable(getResources().getDrawable(R.drawable.rectangle_un));
-                break;
-            case R.id.save_btn:
-                mDoodle.save();
-                break;
-            case R.id.back_btn:
+
+    //++++++++++++++++++以下为一些初始化操作和点击监听+++++++++++++++++++++++++++++++++++++++++
+
+    //
+    private void initView() {
+        mBtnUndo = findViewById(R.id.btn_undo);
+        mBtnUndo.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                if (!(DoodleParams.getDialogInterceptor() != null
+                        && DoodleParams.getDialogInterceptor().onShow(DoodleActivity.this, mDoodle, DoodleParams.DialogType.CLEAR_ALL))) {
+                    DialogController.showEnterCancelDialog(DoodleActivity.this,
+                            getString(R.string.doodle_clear_screen), getString(R.string.doodle_cant_undo_after_clearing),
+                            new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    mDoodle.clear();
+                                }
+                            }, null
+                    );
+                }
+                return true;
+            }
+        });
+        mSelectedEditContainer = findViewById(R.id.doodle_selectable_edit_container);
+        mSelectedEditContainer.setVisibility(View.GONE);
+        mItemScaleTextView = (TextView) findViewById(R.id.item_scale);
+        mItemScaleTextView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                if (mTouchGestureListener.getSelectedItem() != null) {
+                    mTouchGestureListener.getSelectedItem().setScale(1);
+                }
+                return true;
+            }
+        });
+
+        mSettingsPanel = findViewById(R.id.doodle_panel);
+
+        mBtnHidePanel = findViewById(R.id.doodle_btn_hide_panel);
+
+        mPaintSizeView = (TextView) findViewById(R.id.paint_size_text);
+        mShapeContainer = findViewById(R.id.shape_container);
+        mPenContainer = findViewById(R.id.pen_container);
+        mSizeContainer = findViewById(R.id.size_container);
+        mMosaicMenu = findViewById(R.id.mosaic_menu);
+        mEditBtn = findViewById(R.id.doodle_selectable_edit);
+
+        mBtnColor = DoodleActivity.this.findViewById(R.id.btn_set_color);
+        mColorContainer = DoodleActivity.this.findViewById(R.id.btn_set_color_container);
+        mEditSizeSeekBar = (SeekBar) findViewById(R.id.doodle_seekbar_size);
+        mEditSizeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (progress <= 0) {
+                    mEditSizeSeekBar.setProgress(1);
+                    return;
+                }
+                if ((int) mDoodle.getSize() == progress) {
+                    return;
+                }
+                mDoodle.setSize(progress);
+                if (mTouchGestureListener.getSelectedItem() != null) {
+                    mTouchGestureListener.getSelectedItem().setSize(progress);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
+
+        mDoodleView.setOnTouchListener(new View.OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                // 隐藏设置面板
+                if (!mBtnHidePanel.isSelected()  // 设置面板没有被隐藏
+                        && mDoodleParams.mChangePanelVisibilityDelay > 0) {
+                    switch (event.getAction() & MotionEvent.ACTION_MASK) {
+                        case MotionEvent.ACTION_DOWN:
+                            mSettingsPanel.removeCallbacks(mHideDelayRunnable);
+                            mSettingsPanel.removeCallbacks(mShowDelayRunnable);
+                            //触摸屏幕超过一定时间才判断为需要隐藏设置面板
+                            mSettingsPanel.postDelayed(mHideDelayRunnable, mDoodleParams.mChangePanelVisibilityDelay);
+                            break;
+                        case MotionEvent.ACTION_CANCEL:
+                        case MotionEvent.ACTION_UP:
+                            mSettingsPanel.removeCallbacks(mHideDelayRunnable);
+                            mSettingsPanel.removeCallbacks(mShowDelayRunnable);
+                            //离开屏幕超过一定时间才判断为需要显示设置面板
+                            mSettingsPanel.postDelayed(mShowDelayRunnable, mDoodleParams.mChangePanelVisibilityDelay);
+                            break;
+                    }
+                }
+
+                return false;
+            }
+        });
+
+        // 长按标题栏显示原图
+        findViewById(R.id.doodle_txt_title).setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction() & MotionEvent.ACTION_MASK) {
+                    case MotionEvent.ACTION_DOWN:
+                        v.setPressed(true);
+                        mDoodle.setShowOriginal(true);
+                        break;
+                    case MotionEvent.ACTION_UP:
+                    case MotionEvent.ACTION_CANCEL:
+                        v.setPressed(false);
+                        mDoodle.setShowOriginal(false);
+                        break;
+                }
+                return true;
+            }
+        });
+
+        mViewShowAnimation = new AlphaAnimation(0, 1);
+        mViewShowAnimation.setDuration(150);
+        mViewHideAnimation = new AlphaAnimation(1, 0);
+        mViewHideAnimation.setDuration(150);
+        mHideDelayRunnable = new Runnable() {
+            public void run() {
+                hideView(mSettingsPanel);
+            }
+
+        };
+        mShowDelayRunnable = new Runnable() {
+            public void run() {
+                showView(mSettingsPanel);
+            }
+        };
+    }
+
+    private ValueAnimator mRotateAnimator;
+
+    public void onClick(final View v) {
+        if (v.getId() == R.id.btn_pen_hand) {
+            mDoodle.setPen(DoodlePen.BRUSH);
+        } else if (v.getId() == R.id.btn_pen_mosaic) {
+            mDoodle.setPen(DoodlePen.MOSAIC);
+        } else if (v.getId() == R.id.btn_pen_copy) {
+            mDoodle.setPen(DoodlePen.COPY);
+        } else if (v.getId() == R.id.btn_pen_eraser) {
+            mDoodle.setPen(DoodlePen.ERASER);
+        } else if (v.getId() == R.id.btn_pen_text) {
+            mDoodle.setPen(DoodlePen.TEXT);
+        } else if (v.getId() == R.id.btn_pen_bitmap) {
+            mDoodle.setPen(DoodlePen.BITMAP);
+        } else if (v.getId() == R.id.doodle_btn_brush_edit) {
+            mDoodleView.setEditMode(!mDoodleView.isEditMode());
+        } else if (v.getId() == R.id.btn_undo) {
+            mDoodle.undo();
+        } else if (v.getId() == R.id.btn_zoomer) {
+            mDoodleView.enableZoomer(!mDoodleView.isEnableZoomer());
+        } else if (v.getId() == R.id.btn_set_color_container) {
+            DoodleColor color = null;
+            if (mDoodle.getColor() instanceof DoodleColor) {
+                color = (DoodleColor) mDoodle.getColor();
+            }
+            if (color == null) {
+                return;
+            }
+            if (!(DoodleParams.getDialogInterceptor() != null
+                    && DoodleParams.getDialogInterceptor().onShow(DoodleActivity.this, mDoodle, DoodleParams.DialogType.COLOR_PICKER))) {
+                boolean fullScreen = (getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN) != 0;
+                int themeId;
+                if (fullScreen) {
+                    themeId = android.R.style.Theme_Translucent_NoTitleBar_Fullscreen;
+                } else {
+                    themeId = android.R.style.Theme_Translucent_NoTitleBar;
+                }
+                new ColorPickerDialog(DoodleActivity.this,
+                        new ColorPickerDialog.OnColorChangedListener() {
+                            public void colorChanged(int color, int size) {
+                                mDoodle.setColor(new DoodleColor(color));
+                                mDoodle.setSize(size);
+                            }
+
+                            @Override
+                            public void colorChanged(Drawable color, int size) {
+                                Bitmap bitmap = ImageUtils.getBitmapFromDrawable(color);
+                                mDoodle.setColor(new DoodleColor(bitmap));
+                                mDoodle.setSize(size);
+                            }
+                        }, themeId).show(mDoodleView, mBtnColor.getBackground(), Math.min(mDoodleView.getWidth(), mDoodleView.getHeight()));
+            }
+        } else if (v.getId() == R.id.doodle_btn_hide_panel) {
+            mSettingsPanel.removeCallbacks(mHideDelayRunnable);
+            mSettingsPanel.removeCallbacks(mShowDelayRunnable);
+            v.setSelected(!v.isSelected());
+            if (!mBtnHidePanel.isSelected()) {
+                showView(mSettingsPanel);
+            } else {
+                hideView(mSettingsPanel);
+            }
+        } else if (v.getId() == R.id.doodle_btn_finish) {
+            mDoodle.save();
+        } else if (v.getId() == R.id.doodle_btn_back) {
+            if (mDoodle.getAllItem() == null || mDoodle.getItemCount() == 0) {
                 finish();
-                break;
-            case R.id.brush:
-                menu.setVisibility(View.VISIBLE);
-                mosaic_menu.setVisibility(View.GONE);
-                mDoodle.setPen(DoodlePen.BRUSH);
-                mDoodle.setColor(new DoodleColor(color));
-                brush.setImageDrawable(getResources().getDrawable(R.drawable.brush));
-                prettify.setImageDrawable(getResources().getDrawable(R.drawable.prettify_un));
-                text.setImageDrawable(getResources().getDrawable(R.drawable.text_un));
-                mosaic.setImageDrawable(getResources().getDrawable(R.drawable.mosaic_un));
-                screenshot.setImageDrawable(getResources().getDrawable(R.drawable.screenshot_un));
-                break;
-            case R.id.prettify:
-                menu.setVisibility(View.GONE);
-                mosaic_menu.setVisibility(View.GONE);
-                brush.setImageDrawable(getResources().getDrawable(R.drawable.brush_un));
-                prettify.setImageDrawable(getResources().getDrawable(R.drawable.prettify));
-                text.setImageDrawable(getResources().getDrawable(R.drawable.text_un));
-                mosaic.setImageDrawable(getResources().getDrawable(R.drawable.mosaic_un));
-                screenshot.setImageDrawable(getResources().getDrawable(R.drawable.screenshot_un));
-                break;
-            case R.id.text:
-                menu.setVisibility(View.GONE);
-                mosaic_menu.setVisibility(View.GONE);
-                mDoodle.setPen(DoodlePen.BITMAP);
-//                Intent intent=new Intent(this,InputActivity.class);
-//                startActivityForResult(intent,INPUT);
-                TextDialog textDialog=new TextDialog(this,this);
-                textDialog.showAtLocation(edit_bg, Gravity.BOTTOM,0,0);
-                brush.setImageDrawable(getResources().getDrawable(R.drawable.brush_un));
-                prettify.setImageDrawable(getResources().getDrawable(R.drawable.prettify_un));
-                text.setImageDrawable(getResources().getDrawable(R.drawable.text));
-                mosaic.setImageDrawable(getResources().getDrawable(R.drawable.mosaic_un));
-                screenshot.setImageDrawable(getResources().getDrawable(R.drawable.screenshot_un));
-                break;
-            case R.id.mosaic:
-                menu.setVisibility(View.GONE);
-                mosaic_menu.setVisibility(View.VISIBLE);
-                mDoodle.setPen(DoodlePen.MOSAIC);
-                mDoodle.setColor(DoodlePath.getMosaicColor(mDoodle, DoodlePath.MOSAIC_LEVEL_2));
-                brush.setImageDrawable(getResources().getDrawable(R.drawable.brush_un));
-                prettify.setImageDrawable(getResources().getDrawable(R.drawable.prettify_un));
-                text.setImageDrawable(getResources().getDrawable(R.drawable.text_un));
-                mosaic.setImageDrawable(getResources().getDrawable(R.drawable.mosaic));
-                screenshot.setImageDrawable(getResources().getDrawable(R.drawable.screenshot_un));
-                break;
-            case R.id.screenshot:
-                menu.setVisibility(View.GONE);
-                mosaic_menu.setVisibility(View.GONE);
-                brush.setImageDrawable(getResources().getDrawable(R.drawable.brush_un));
-                prettify.setImageDrawable(getResources().getDrawable(R.drawable.prettify_un));
-                text.setImageDrawable(getResources().getDrawable(R.drawable.text_un));
-                mosaic.setImageDrawable(getResources().getDrawable(R.drawable.mosaic_un));
-                screenshot.setImageDrawable(getResources().getDrawable(R.drawable.screenshot));
-                break;
-            case R.id.mosaic_one:
-                mDoodle.setColor(DoodlePath.getMosaicColor(mDoodle, DoodlePath.MOSAIC_LEVEL_2));
-                break;
-            case R.id.mosaic_two:
-                mDoodle.setColor(DoodlePath.getMosaicColor(mDoodle, DoodlePath.MOSAIC_LEVEL_1));
-                break;
+                return;
+            }
+            if (!(DoodleParams.getDialogInterceptor() != null
+                    && DoodleParams.getDialogInterceptor().onShow(DoodleActivity.this, mDoodle, DoodleParams.DialogType.SAVE))) {
+                DialogController.showEnterCancelDialog(DoodleActivity.this, getString(R.string.doodle_saving_picture), null, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mDoodle.save();
+                    }
+                }, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        finish();
+                    }
+                });
+            }
+        } else if (v.getId() == R.id.doodle_btn_rotate) {
+            // 旋转图片
+            if (mRotateAnimator == null) {
+                mRotateAnimator = new ValueAnimator();
+                mRotateAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator animation) {
+                        int value = (int) animation.getAnimatedValue();
+                        mDoodle.setDoodleRotation(value);
+                    }
+                });
+                mRotateAnimator.setDuration(250);
+            }
+            if (mRotateAnimator.isRunning()) {
+                return;
+            }
+            mRotateAnimator.setIntValues(mDoodle.getDoodleRotation(), mDoodle.getDoodleRotation() + 90);
+            mRotateAnimator.start();
+        } else if (v.getId() == R.id.doodle_selectable_edit) {
+            if (mTouchGestureListener.getSelectedItem() instanceof DoodleText) {
+                createDoodleText((DoodleText) mTouchGestureListener.getSelectedItem(), -1, -1);
+            } else if (mTouchGestureListener.getSelectedItem() instanceof DoodleBitmap) {
+                createDoodleBitmap((DoodleBitmap) mTouchGestureListener.getSelectedItem(), -1, -1);
+            }
+        } else if (v.getId() == R.id.doodle_selectable_remove) {
+            mDoodle.removeItem(mTouchGestureListener.getSelectedItem());
+            mTouchGestureListener.setSelectedItem(null);
+        } else if (v.getId() == R.id.doodle_selectable_top) {
+            mDoodle.topItem(mTouchGestureListener.getSelectedItem());
+        } else if (v.getId() == R.id.doodle_selectable_bottom) {
+            mDoodle.bottomItem(mTouchGestureListener.getSelectedItem());
+        } else if (v.getId() == R.id.btn_hand_write) {
+            mDoodle.setShape(DoodleShape.HAND_WRITE);
+        } else if (v.getId() == R.id.btn_arrow) {
+            mDoodle.setShape(DoodleShape.ARROW);
+        } else if (v.getId() == R.id.btn_line) {
+            mDoodle.setShape(DoodleShape.LINE);
+        } else if (v.getId() == R.id.btn_holl_circle) {
+            mDoodle.setShape(DoodleShape.HOLLOW_CIRCLE);
+        } else if (v.getId() == R.id.btn_fill_circle) {
+            mDoodle.setShape(DoodleShape.FILL_CIRCLE);
+        } else if (v.getId() == R.id.btn_holl_rect) {
+            mDoodle.setShape(DoodleShape.HOLLOW_RECT);
+        } else if (v.getId() == R.id.btn_fill_rect) {
+            mDoodle.setShape(DoodleShape.FILL_RECT);
+        } else if (v.getId() == R.id.btn_mosaic_level1) {
+            if (v.isSelected()) {
+                return;
+            }
+
+            mMosaicLevel = DoodlePath.MOSAIC_LEVEL_1;
+            mDoodle.setColor(DoodlePath.getMosaicColor(mDoodle, mMosaicLevel));
+            v.setSelected(true);
+            mMosaicMenu.findViewById(R.id.btn_mosaic_level2).setSelected(false);
+            mMosaicMenu.findViewById(R.id.btn_mosaic_level3).setSelected(false);
+            if (mTouchGestureListener.getSelectedItem() != null) {
+                mTouchGestureListener.getSelectedItem().setColor(mDoodle.getColor().copy());
+            }
+        } else if (v.getId() == R.id.btn_mosaic_level2) {
+            if (v.isSelected()) {
+                return;
+            }
+
+            mMosaicLevel = DoodlePath.MOSAIC_LEVEL_2;
+            mDoodle.setColor(DoodlePath.getMosaicColor(mDoodle, mMosaicLevel));
+            v.setSelected(true);
+            mMosaicMenu.findViewById(R.id.btn_mosaic_level1).setSelected(false);
+            mMosaicMenu.findViewById(R.id.btn_mosaic_level3).setSelected(false);
+            if (mTouchGestureListener.getSelectedItem() != null) {
+                mTouchGestureListener.getSelectedItem().setColor(mDoodle.getColor().copy());
+            }
+        } else if (v.getId() == R.id.btn_mosaic_level3) {
+            if (v.isSelected()) {
+                return;
+            }
+
+            mMosaicLevel = DoodlePath.MOSAIC_LEVEL_3;
+            mDoodle.setColor(DoodlePath.getMosaicColor(mDoodle, mMosaicLevel));
+            v.setSelected(true);
+            mMosaicMenu.findViewById(R.id.btn_mosaic_level1).setSelected(false);
+            mMosaicMenu.findViewById(R.id.btn_mosaic_level2).setSelected(false);
+            if (mTouchGestureListener.getSelectedItem() != null) {
+                mTouchGestureListener.getSelectedItem().setColor(mDoodle.getColor().copy());
+            }
         }
     }
 
-    @Override
-    public void sure(Bitmap bitmap) {
-        IDoodleSelectableItem item = new DoodleBitmap(mDoodle, bitmap, 200, 100, 100);
-        mDoodle.addItem(item);
-        mTouchGestureListener.setSelectedItem(item);
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            if (mDoodleView.isEditMode()) {
+                mDoodleView.setEditMode(false);
+                return true;
+            }
+        }
+
+        return super.onKeyDown(keyCode, event);
     }
 
+    @Override
+    public void onBackPressed() { // 返回键监听
+        findViewById(R.id.doodle_btn_back).performClick();
+    }
+
+    private void showView(View view) {
+        if (view.getVisibility() == View.VISIBLE) {
+            return;
+        }
+
+        view.clearAnimation();
+        view.startAnimation(mViewShowAnimation);
+        view.setVisibility(View.VISIBLE);
+    }
+
+    private void hideView(View view) {
+        if (view.getVisibility() != View.VISIBLE) {
+            return;
+        }
+        view.clearAnimation();
+        view.startAnimation(mViewHideAnimation);
+        view.setVisibility(View.GONE);
+    }
 
     /**
      * 包裹DoodleView，监听相应的设置接口，以改变UI状态
@@ -634,12 +773,12 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
         private Map<IDoodlePen, Integer> mBtnPenIds = new HashMap<>();
 
         {
-            mBtnPenIds.put(DoodlePen.BRUSH, cn.hzw.doodle.R.id.btn_pen_hand);
-            mBtnPenIds.put(DoodlePen.MOSAIC, cn.hzw.doodle.R.id.btn_pen_mosaic);
-            mBtnPenIds.put(DoodlePen.COPY, cn.hzw.doodle.R.id.btn_pen_copy);
-            mBtnPenIds.put(DoodlePen.ERASER, cn.hzw.doodle.R.id.btn_pen_eraser);
-            mBtnPenIds.put(DoodlePen.TEXT, cn.hzw.doodle.R.id.btn_pen_text);
-            mBtnPenIds.put(DoodlePen.BITMAP, cn.hzw.doodle.R.id.btn_pen_bitmap);
+            mBtnPenIds.put(DoodlePen.BRUSH, R.id.btn_pen_hand);
+            mBtnPenIds.put(DoodlePen.MOSAIC, R.id.btn_pen_mosaic);
+            mBtnPenIds.put(DoodlePen.COPY, R.id.btn_pen_copy);
+            mBtnPenIds.put(DoodlePen.ERASER, R.id.btn_pen_eraser);
+            mBtnPenIds.put(DoodlePen.TEXT, R.id.btn_pen_text);
+            mBtnPenIds.put(DoodlePen.BITMAP, R.id.btn_pen_bitmap);
         }
 
         @Override
@@ -696,7 +835,7 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
                 }
             } else if (pen == DoodlePen.MOSAIC) {
                 if (mMosaicLevel <= 0) {
-                    mMosaicMenu.findViewById(cn.hzw.doodle.R.id.btn_mosaic_level2).performClick();
+                    mMosaicMenu.findViewById(R.id.btn_mosaic_level2).performClick();
                 } else {
                     mDoodle.setColor(DoodlePath.getMosaicColor(mDoodle, mMosaicLevel));
                 }
@@ -722,14 +861,15 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
         }
 
         private Map<IDoodleShape, Integer> mBtnShapeIds = new HashMap<>();
+
         {
-            mBtnShapeIds.put(DoodleShape.HAND_WRITE, cn.hzw.doodle.R.id.btn_hand_write);
-            mBtnShapeIds.put(DoodleShape.ARROW, cn.hzw.doodle.R.id.btn_arrow);
-            mBtnShapeIds.put(DoodleShape.LINE, cn.hzw.doodle.R.id.btn_line);
-            mBtnShapeIds.put(DoodleShape.HOLLOW_CIRCLE, cn.hzw.doodle.R.id.btn_holl_circle);
-            mBtnShapeIds.put(DoodleShape.FILL_CIRCLE, cn.hzw.doodle.R.id.btn_fill_circle);
-            mBtnShapeIds.put(DoodleShape.HOLLOW_RECT, cn.hzw.doodle.R.id.btn_holl_rect);
-            mBtnShapeIds.put(DoodleShape.FILL_RECT, cn.hzw.doodle.R.id.btn_fill_rect);
+            mBtnShapeIds.put(DoodleShape.HAND_WRITE, R.id.btn_hand_write);
+            mBtnShapeIds.put(DoodleShape.ARROW, R.id.btn_arrow);
+            mBtnShapeIds.put(DoodleShape.LINE, R.id.btn_line);
+            mBtnShapeIds.put(DoodleShape.HOLLOW_CIRCLE, R.id.btn_holl_circle);
+            mBtnShapeIds.put(DoodleShape.FILL_CIRCLE, R.id.btn_fill_circle);
+            mBtnShapeIds.put(DoodleShape.HOLLOW_RECT, R.id.btn_holl_rect);
+            mBtnShapeIds.put(DoodleShape.FILL_RECT, R.id.btn_fill_rect);
 
         }
 
@@ -739,11 +879,12 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
             setSingleSelected(mBtnShapeIds.values(), mBtnShapeIds.get(shape));
         }
 
-        TextView mPaintSizeView = (TextView) this.findViewById(cn.hzw.doodle.R.id.paint_size_text);
+        TextView mPaintSizeView = (TextView) DoodleActivity.this.findViewById(R.id.paint_size_text);
 
         @Override
         public void setSize(float paintSize) {
             super.setSize(paintSize);
+            mEditSizeSeekBar.setProgress((int) paintSize);
             mPaintSizeView.setText("" + (int) paintSize);
 
             if (mTouchGestureListener.getSelectedItem() != null) {
@@ -777,13 +918,13 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
                     && doodleColor.getLevel() != mMosaicLevel) {
                 switch (doodleColor.getLevel()) {
                     case DoodlePath.MOSAIC_LEVEL_1:
-                        this.findViewById(cn.hzw.doodle.R.id.btn_mosaic_level1).performClick();
+                        DoodleActivity.this.findViewById(R.id.btn_mosaic_level1).performClick();
                         break;
                     case DoodlePath.MOSAIC_LEVEL_2:
-                        this.findViewById(cn.hzw.doodle.R.id.btn_mosaic_level2).performClick();
+                        DoodleActivity.this.findViewById(R.id.btn_mosaic_level2).performClick();
                         break;
                     case DoodlePath.MOSAIC_LEVEL_3:
-                        this.findViewById(cn.hzw.doodle.R.id.btn_mosaic_level3).performClick();
+                        DoodleActivity.this.findViewById(R.id.btn_mosaic_level3).performClick();
                         break;
                 }
             }
@@ -792,9 +933,9 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
         @Override
         public void enableZoomer(boolean enable) {
             super.enableZoomer(enable);
-            this.findViewById(cn.hzw.doodle.R.id.btn_zoomer).setSelected(enable);
+            DoodleActivity.this.findViewById(R.id.btn_zoomer).setSelected(enable);
             if (enable) {
-                Toast.makeText(ImageEditActivity.this, "x" + mDoodleParams.mZoomerScale, Toast.LENGTH_SHORT).show();
+                Toast.makeText(DoodleActivity.this, "x" + mDoodleParams.mZoomerScale, Toast.LENGTH_SHORT).show();
             }
         }
 
@@ -810,7 +951,7 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
             mTouchGestureListener.setSelectedItem(null);
         }
 
-        View mBtnEditMode = this.findViewById(cn.hzw.doodle.R.id.doodle_btn_brush_edit);
+        View mBtnEditMode = DoodleActivity.this.findViewById(R.id.doodle_btn_brush_edit);
         Boolean mLastIsDrawableOutside = null;
 
         @Override
@@ -822,7 +963,7 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
             super.setEditMode(editMode);
             mBtnEditMode.setSelected(editMode);
             if (editMode) {
-                Toast.makeText(ImageEditActivity.this, cn.hzw.doodle.R.string.doodle_edit_mode, Toast.LENGTH_SHORT).show();
+                Toast.makeText(DoodleActivity.this, R.string.doodle_edit_mode, Toast.LENGTH_SHORT).show();
                 mLastIsDrawableOutside = mDoodle.isDrawableOutside(); // save
                 mDoodle.setIsDrawableOutside(true);
                 mPenContainer.setVisibility(GONE);
@@ -849,21 +990,12 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
         private void setSingleSelected(Collection<Integer> ids, int selectedId) {
             for (int id : ids) {
                 if (id == selectedId) {
-                    this.findViewById(id).setSelected(true);
+                    DoodleActivity.this.findViewById(id).setSelected(true);
                 } else {
-                    this.findViewById(id).setSelected(false);
+                    DoodleActivity.this.findViewById(id).setSelected(false);
                 }
             }
         }
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        switch (requestCode){
-            case INPUT:
-
-                break;
-        }
-    }
 }
