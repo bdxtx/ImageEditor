@@ -44,4 +44,7 @@ dependencies {
 
 //    implementation 'com.github.1993hzw:Doodle:5.5.1'
     implementation project(path: ':doodle')
+    implementation project(path: ':photoedit')
+
+    implementation'com.github.xingxing-yan:BLImage:1.0.0'
 }

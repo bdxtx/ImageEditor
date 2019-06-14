@@ -28,7 +28,7 @@ import java.util.List;
  *
  * Author: nanchen
  * Email: liushilin520@foxmail.com
- * Date: 2017-03-22  11:38
+ * Date: 2017-03-22  crop_11:38
  */
 
 public class SelectDialog extends Dialog implements OnClickListener, OnItemClickListener {

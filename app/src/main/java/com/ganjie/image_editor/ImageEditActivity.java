@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
@@ -26,6 +27,9 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.bumptech.glide.Glide;
+import com.muzhi.camerasdk.library.utils.PhotoEnhance;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -60,6 +64,8 @@ import cn.hzw.doodle.core.IDoodleShape;
 import cn.hzw.doodle.core.IDoodleTouchDetector;
 import cn.hzw.doodle.dialog.DialogController;
 import cn.hzw.doodle.imagepicker.ImageSelectorView;
+import cn.jarlen.photoedit.crop.CropImageType;
+import cn.jarlen.photoedit.crop.CropImageView;
 
 public class ImageEditActivity extends BaseActivity implements TextDialog.OnclickListener {
 
@@ -72,12 +78,21 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
     public static final int RESULT_ERROR = -111; // 出现错误
     public static final int INPUT = 303; // 出现错误
 
+    public final int DEFAULT_PROGRESS = 101;
+    private int mBProgress, mCProgress, mSProgress;
+
     @BindView(R.id.ll_color_picker)
     LinearLayout ll_color_picker;
     @BindView(R.id.menu)
     LinearLayout menu;
     @BindView(R.id.mosaic_menu)
     LinearLayout mosaic_menu;
+    @BindView(R.id.pic_menu)
+    LinearLayout pic_menu;
+    @BindView(R.id.pic_control)
+    LinearLayout pic_control;
+    @BindView(R.id.crop_menu)
+    LinearLayout crop_menu;
     @BindView(R.id.color_selector)
     ImageView color_selector;
     @BindView(R.id.btn_arrow)
@@ -98,10 +113,23 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
     ImageView mosaic;
     @BindView(R.id.screenshot)
     ImageView screenshot;
+    @BindView(R.id.img_show)
+    ImageView img_show;
     @BindView(R.id.edit_bg)
     RelativeLayout edit_bg;
+    @BindView(R.id.tv_pic_text)
+    TextView tv_pic_text;
+    @BindView(R.id.enhance_seekbar)
+    SeekBar enhance_seekbar;
+    @BindView(R.id.cropmageView)
+    CropImageView cropImage;
 
     private int color;
+    private Bitmap bitmap;
+
+    private int selectPicControl;
+    private Bitmap mDoodleBitmap;
+
     /**
      * 启动涂鸦界面
      *
@@ -220,8 +248,8 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
             this.finish();
             return;
         }
-
-        Bitmap bitmap = ImageUtils.createBitmapFromPath(mImagePath, this);
+        bitmap = ImageUtils.createBitmapFromPath(mImagePath, this);
+        Glide.with(this).load(bitmap).into(img_show);
         if (bitmap == null) {
             LogUtil.e("TAG", "bitmap is null!");
             this.finish();
@@ -396,6 +424,56 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
         mDoodle.setDoodleMinScale(mDoodleParams.mMinScale);
         mDoodle.setDoodleMaxScale(mDoodleParams.mMaxScale);
 
+        mBProgress = mCProgress = mSProgress = DEFAULT_PROGRESS;
+        mDoodleBitmap = bitmap.copy(bitmap.getConfig(), true);
+        PhotoEnhance mPhotoEnhance = new PhotoEnhance(mDoodleBitmap);
+        enhance_seekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                switch (selectPicControl) {
+                    case 1:
+                        mPhotoEnhance.setBrightness(progress);
+                        mDoodleBitmap = mPhotoEnhance.handleImage(mPhotoEnhance.Enhance_Brightness);
+                        break;
+                    case 2:
+                        mPhotoEnhance.setContrast(progress);
+                        mDoodleBitmap = mPhotoEnhance.handleImage(mPhotoEnhance.Enhance_Contrast);
+                        break;
+                    case 3:
+                        mPhotoEnhance.setSaturation(progress);
+                        mDoodleBitmap = mPhotoEnhance.handleImage(mPhotoEnhance.Enhance_Saturation);
+                        break;
+                    case 4:
+                        mDoodleBitmap=sharpenImageAmeliorate(bitmap,progress);
+                        break;
+                }
+                if (mDoodleBitmap != null) {
+                    Glide.with(ImageEditActivity.this).load(mDoodleBitmap).into(img_show);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+        Bitmap hh = BitmapFactory.decodeResource(this.getResources(),
+                R.drawable.crop_button);
+        cropImage.setCropOverlayCornerBitmap(hh);
+        cropImage.setImageBitmap(bitmap);
+        cropImage.setGuidelines(CropImageType.CROPIMAGE_GRID_ON_TOUCH);// 触摸时显示网格
+
+        cropImage.setFixedAspectRatio(false);// 自由剪切
+
+
+
+
     }
 
     private boolean canChangeColor(IDoodlePen pen) {
@@ -457,7 +535,8 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
     }
     @OnClick({R.id.color_selector,R.id.img_white,R.id.img_black,R.id.img_red,R.id.img_yellow,R.id.img_green,R.id.img_blue,
             R.id.img_purple,R.id.img_pink,R.id.return_last,R.id.btn_arrow,R.id.btn_hand_write,R.id.btn_holl_circle,R.id.btn_holl_rect
-    ,R.id.save_btn,R.id.back_btn,R.id.brush,R.id.prettify,R.id.mosaic,R.id.text,R.id.screenshot,R.id.return_last_2,R.id.mosaic_one,R.id.mosaic_two})
+    ,R.id.save_btn,R.id.back_btn,R.id.brush,R.id.prettify,R.id.mosaic,R.id.text,R.id.screenshot,R.id.return_last_2,R.id.mosaic_one,R.id.mosaic_two,
+    R.id.pic_one,R.id.pic_two,R.id.pic_three,R.id.pic_four,R.id.pic_cancel,R.id.pic_sure,R.id.crop_o,R.id.crop_11,R.id.crop_43,R.id.pic_cancel2,R.id.pic_sure2})
     public void onClick(View view){
         switch (view.getId()){
             case R.id.color_selector:
@@ -554,8 +633,12 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
             case R.id.brush:
                 menu.setVisibility(View.VISIBLE);
                 mosaic_menu.setVisibility(View.GONE);
+                pic_menu.setVisibility(View.GONE);
                 mDoodle.setPen(DoodlePen.BRUSH);
                 mDoodle.setColor(new DoodleColor(color));
+                img_show.setVisibility(View.GONE);
+                cropImage.setVisibility(View.GONE);
+                crop_menu.setVisibility(View.GONE);
                 brush.setImageDrawable(getResources().getDrawable(R.drawable.brush));
                 prettify.setImageDrawable(getResources().getDrawable(R.drawable.prettify_un));
                 text.setImageDrawable(getResources().getDrawable(R.drawable.text_un));
@@ -565,6 +648,10 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
             case R.id.prettify:
                 menu.setVisibility(View.GONE);
                 mosaic_menu.setVisibility(View.GONE);
+                pic_menu.setVisibility(View.VISIBLE);
+                img_show.setVisibility(View.GONE);
+                cropImage.setVisibility(View.GONE);
+                crop_menu.setVisibility(View.GONE);
                 brush.setImageDrawable(getResources().getDrawable(R.drawable.brush_un));
                 prettify.setImageDrawable(getResources().getDrawable(R.drawable.prettify));
                 text.setImageDrawable(getResources().getDrawable(R.drawable.text_un));
@@ -574,7 +661,11 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
             case R.id.text:
                 menu.setVisibility(View.GONE);
                 mosaic_menu.setVisibility(View.GONE);
+                pic_menu.setVisibility(View.GONE);
                 mDoodle.setPen(DoodlePen.BITMAP);
+                img_show.setVisibility(View.GONE);
+                cropImage.setVisibility(View.GONE);
+                crop_menu.setVisibility(View.GONE);
 //                Intent intent=new Intent(this,InputActivity.class);
 //                startActivityForResult(intent,INPUT);
                 TextDialog textDialog=new TextDialog(this,this);
@@ -588,7 +679,11 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
             case R.id.mosaic:
                 menu.setVisibility(View.GONE);
                 mosaic_menu.setVisibility(View.VISIBLE);
+                pic_menu.setVisibility(View.GONE);
                 mDoodle.setPen(DoodlePen.MOSAIC);
+                img_show.setVisibility(View.GONE);
+                cropImage.setVisibility(View.GONE);
+                crop_menu.setVisibility(View.GONE);
                 mDoodle.setColor(DoodlePath.getMosaicColor(mDoodle, DoodlePath.MOSAIC_LEVEL_2));
                 brush.setImageDrawable(getResources().getDrawable(R.drawable.brush_un));
                 prettify.setImageDrawable(getResources().getDrawable(R.drawable.prettify_un));
@@ -599,6 +694,10 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
             case R.id.screenshot:
                 menu.setVisibility(View.GONE);
                 mosaic_menu.setVisibility(View.GONE);
+                pic_menu.setVisibility(View.GONE);
+                img_show.setVisibility(View.GONE);
+                cropImage.setVisibility(View.VISIBLE);
+                crop_menu.setVisibility(View.VISIBLE);
                 brush.setImageDrawable(getResources().getDrawable(R.drawable.brush_un));
                 prettify.setImageDrawable(getResources().getDrawable(R.drawable.prettify_un));
                 text.setImageDrawable(getResources().getDrawable(R.drawable.text_un));
@@ -610,6 +709,60 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
                 break;
             case R.id.mosaic_two:
                 mDoodle.setColor(DoodlePath.getMosaicColor(mDoodle, DoodlePath.MOSAIC_LEVEL_1));
+                break;
+            case R.id.pic_one:
+                pic_control.setVisibility(View.VISIBLE);
+                tv_pic_text.setText("亮度");
+                enhance_seekbar.setProgress(DEFAULT_PROGRESS);
+                selectPicControl=1;
+                img_show.setVisibility(View.VISIBLE);
+                break;
+            case R.id.pic_two:
+                pic_control.setVisibility(View.VISIBLE);
+                tv_pic_text.setText("对比度");
+                enhance_seekbar.setProgress(DEFAULT_PROGRESS);
+                selectPicControl=2;
+                img_show.setVisibility(View.VISIBLE);
+                break;
+            case R.id.pic_three:
+                pic_control.setVisibility(View.VISIBLE);
+                tv_pic_text.setText("饱和度");
+                enhance_seekbar.setProgress(DEFAULT_PROGRESS);
+                selectPicControl=3;
+                img_show.setVisibility(View.VISIBLE);
+                break;
+            case R.id.pic_four:
+                pic_control.setVisibility(View.VISIBLE);
+                tv_pic_text.setText("锐化");
+                enhance_seekbar.setProgress(DEFAULT_PROGRESS);
+                selectPicControl=4;
+                img_show.setVisibility(View.VISIBLE);
+                break;
+            case R.id.pic_cancel:
+                pic_control.setVisibility(View.GONE);
+                break;
+            case R.id.pic_sure:
+                pic_control.setVisibility(View.GONE);
+                break;
+            case R.id.pic_cancel2:
+                cropImage.setVisibility(View.GONE);
+                crop_menu.setVisibility(View.GONE);
+                break;
+            case R.id.pic_sure2:
+                Bitmap bit = cropImage.getCroppedImage();
+                img_show.setVisibility(View.VISIBLE);
+                Glide.with(this).load(bit).into(img_show);
+                break;
+            case R.id.crop_o:
+                cropImage.setFixedAspectRatio(false);
+                break;
+            case R.id.crop_11:
+                cropImage.setFixedAspectRatio(true);
+                cropImage.setAspectRatio(10, 10);
+                break;
+            case R.id.crop_43:
+                cropImage.setFixedAspectRatio(true);
+                cropImage.setAspectRatio(40, 30);
                 break;
         }
     }
@@ -865,5 +1018,76 @@ public class ImageEditActivity extends BaseActivity implements TextDialog.Onclic
 
                 break;
         }
+    }
+
+    /**
+     * 图片锐化（拉普拉斯变换）
+     *
+     * @return
+     */
+    private Bitmap sharpenImageAmeliorate(Bitmap bmp,int progress)
+    {
+        float rate=(progress-100)/100;
+        long start = System.currentTimeMillis();
+        // 拉普拉斯矩阵
+        int[] laplacian = new int[]{-1, -1, -1, -1, 9, -1, -1, -1, -1};
+        //        int[] laplacian = new int[]{0, -1, 0, -1, 5, -1, 0, -1, 0};
+        //        int[] laplacian = new int[]{1, -2, 1, -2, 5, -2, 1, -2, 1};
+        int width = bmp.getWidth();
+        int height = bmp.getHeight();
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+
+        int pixR = 0;
+        int pixG = 0;
+        int pixB = 0;
+
+        int pixColor = 0;
+
+        int newR = 0;
+        int newG = 0;
+        int newB = 0;
+
+        int idx = 0;
+        float alpha = 1F;
+        //原图像素点数组
+        int[] pixels = new int[width*height];
+        //创建一个新数据保存锐化后的像素点
+        int[] pixels_1 = new int[width*height];
+        bmp.getPixels(pixels, 0, width, 0, 0, width, height);
+        for(int i = 1, length = height-1; i<length; i++)
+        {
+            for(int k = 1, len = width-1; k<len; k++)
+            {
+                idx = 0;
+                for(int m = -1; m<=1; m++)
+                {
+                    for(int n = -1; n<=1; n++)
+                    {
+                        pixColor = pixels[( i+n )*width+k+m];
+                        pixR = Color.red(pixColor);
+                        pixG = Color.green(pixColor);
+                        pixB = Color.blue(pixColor);
+
+                        newR = newR+(int)( pixR*laplacian[idx]*alpha);
+                        newG = newG+(int)( pixG*laplacian[idx]*alpha );
+                        newB = newB+(int)( pixB*laplacian[idx]*alpha );
+                        idx++;
+                    }
+                }
+
+                newR = Math.min(255, Math.max(0, newR));
+                newG = Math.min(255, Math.max(0, newG));
+                newB = Math.min(255, Math.max(0, newB));
+
+                pixels_1[i*width+k] = Color.argb(255, newR, newG, newB);
+                newR = 0;
+                newG = 0;
+                newB = 0;
+            }
+        }
+
+        bitmap.setPixels(pixels_1, 0, width, 0, 0, width, height);
+        long end = System.currentTimeMillis();
+        return bitmap;
     }
 }
