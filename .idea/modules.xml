@@ -6,7 +6,6 @@
       <module fileurl="file://$PROJECT_DIR$/ImageEditor-master.iml" filepath="$PROJECT_DIR$/ImageEditor-master.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/doodle/doodle.iml" filepath="$PROJECT_DIR$/doodle/doodle.iml" />
-      <module fileurl="file://$PROJECT_DIR$/doodle/doodle.iml" filepath="$PROJECT_DIR$/doodle/doodle.iml" />
       <module fileurl="file://$PROJECT_DIR$/imageeditlibrary/imageeditlibrary.iml" filepath="$PROJECT_DIR$/imageeditlibrary/imageeditlibrary.iml" />
       <module fileurl="file://$PROJECT_DIR$/photoedit/photoedit.iml" filepath="$PROJECT_DIR$/photoedit/photoedit.iml" />
     </modules>

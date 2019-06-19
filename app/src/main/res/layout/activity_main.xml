@@ -33,8 +33,7 @@
         android:id="@+id/img_show"
         android:layout_width="@dimen/dp_375"
         android:layout_height="@dimen/dp_375"
-        android:layout_centerInParent="true"
-        android:src="@drawable/img_default"/>
+        android:layout_centerInParent="true"/>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -74,13 +73,6 @@
             android:layout_height="wrap_content"
             android:src="@drawable/delete_un"/>
     </LinearLayout>
-    <TextView
-        android:layout_width="@dimen/dp_134"
-        android:layout_height="@dimen/dp_5"
-        android:layout_alignParentBottom="true"
-        android:background="@drawable/shape_black_line"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="@dimen/dp_9"/>
     <TextView
         android:layout_width="@dimen/dp_84"
         android:layout_height="@dimen/dp_31"

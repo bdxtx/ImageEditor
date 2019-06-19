@@ -39,6 +39,7 @@ public class MainActivity extends BaseActivity {
     private static final int REQUEST_CODE_SELECT=1;
     public static final int ACTION_REQUEST_EDITIMAGE = 9;
     public static final int REQ_CODE_DOODLE = 101;
+    public static final int IMAGE_EDIT = 200;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,19 +64,22 @@ public class MainActivity extends BaseActivity {
                 }else {
 //                    File outputFile= FileUtils.genEditFile();
 //                    EditImageActivity.start(this,imgUrl,outputFile.getAbsolutePath(),ACTION_REQUEST_EDITIMAGE);
-                    // 涂鸦参数
-                    DoodleParams params = new DoodleParams();
-                    params.mIsFullScreen = true;
-                    // 图片路径
-                    params.mImagePath = imgUrl;
-                    // 初始画笔大小
-                    params.mPaintUnitSize = DoodleView.DEFAULT_SIZE;
-                    // 画笔颜色
-                    params.mPaintColor = Color.RED;
-                    // 是否支持缩放item
-                    params.mSupportScaleItem = true;
-                    // 启动涂鸦页面
-                    ImageEditActivity.startActivityForResult(MainActivity.this, params, REQ_CODE_DOODLE);
+//                    // 涂鸦参数
+//                    DoodleParams params = new DoodleParams();
+//                    params.mIsFullScreen = true;
+//                    // 图片路径
+//                    params.mImagePath = imgUrl;
+//                    // 初始画笔大小
+//                    params.mPaintUnitSize = DoodleView.DEFAULT_SIZE;
+//                    // 画笔颜色
+//                    params.mPaintColor = Color.RED;
+//                    // 是否支持缩放item
+//                    params.mSupportScaleItem = true;
+//                    // 启动涂鸦页面
+//                    ImageEditActivity.startActivityForResult(MainActivity.this, params, REQ_CODE_DOODLE);
+                    Intent intent=new Intent(this,ImageShowActivity.class);
+                    intent.putExtra("imgUrl",imgUrl);
+                    startActivityForResult(intent,IMAGE_EDIT);
                 }
                 break;
             case R.id.img_photo:
