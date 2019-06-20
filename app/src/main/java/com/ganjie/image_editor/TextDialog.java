@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 
@@ -24,12 +25,14 @@ public class TextDialog extends PopupWindow implements View.OnClickListener {
     private final View view;
     private int selected=2;
     OnclickListener listener;
+    private final ImageView text_per;
 
     public TextDialog(Context context,OnclickListener listener){
         this.context=context;
         this.listener=listener;
         view = LayoutInflater.from(context).inflate(R.layout.text_dialog,null);
         et_text = view.findViewById(R.id.et_text);
+        text_per = view.findViewById(R.id.text_per);
         view.findViewById(R.id.img_cancel).setOnClickListener(this);
         view.findViewById(R.id.img_sure).setOnClickListener(this);
         view.findViewById(R.id.text_bg).setOnClickListener(this);
@@ -78,8 +81,15 @@ public class TextDialog extends PopupWindow implements View.OnClickListener {
                 selected=1;
                 break;
             case R.id.text_per:
-                et_text.setTextColor(color);
-                selected=2;
+                if (selected==2){
+                    text_per.setImageDrawable(view.getResources().getDrawable(R.drawable.text_bg));
+                    et_text.setBackgroundColor(color);
+                    selected=1;
+                }else {
+                    text_per.setImageDrawable(view.getResources().getDrawable(R.drawable.text_per));
+                    et_text.setTextColor(color);
+                    selected=2;
+                }
                 break;
             case R.id.color_white:
                 color=Color.parseColor("#ffffff");

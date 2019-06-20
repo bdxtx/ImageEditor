@@ -35,6 +35,10 @@ public class ImageShowActivity extends BaseActivity {
     private Bitmap bitmap;
 
     private static int toBrush=1;
+    private static int toMosaic=2;
+    private static int toText=3;
+    private static int toEnhance=4;
+    private static int toCrop=5;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +72,8 @@ public class ImageShowActivity extends BaseActivity {
                 screenshot.setImageDrawable(getResources().getDrawable(R.drawable.screenshot_un));
                 break;
             case R.id.prettify:
+                intent.setClass(this,PhotoEnhanceActivity.class);
+                startActivityForResult(intent,toEnhance);
                 brush.setImageDrawable(getResources().getDrawable(R.drawable.brush_un));
                 prettify.setImageDrawable(getResources().getDrawable(R.drawable.prettify));
                 text.setImageDrawable(getResources().getDrawable(R.drawable.text_un));
@@ -75,6 +81,8 @@ public class ImageShowActivity extends BaseActivity {
                 screenshot.setImageDrawable(getResources().getDrawable(R.drawable.screenshot_un));
                 break;
             case R.id.text:
+                intent.setClass(this,AddTextActivity.class);
+                startActivityForResult(intent,toText);
                 brush.setImageDrawable(getResources().getDrawable(R.drawable.brush_un));
                 prettify.setImageDrawable(getResources().getDrawable(R.drawable.prettify_un));
                 text.setImageDrawable(getResources().getDrawable(R.drawable.text));
@@ -82,6 +90,8 @@ public class ImageShowActivity extends BaseActivity {
                 screenshot.setImageDrawable(getResources().getDrawable(R.drawable.screenshot_un));
                 break;
             case R.id.mosaic:
+                intent.setClass(this,MosaicActivity.class);
+                startActivityForResult(intent,toMosaic);
                 brush.setImageDrawable(getResources().getDrawable(R.drawable.brush_un));
                 prettify.setImageDrawable(getResources().getDrawable(R.drawable.prettify_un));
                 text.setImageDrawable(getResources().getDrawable(R.drawable.text_un));
@@ -89,6 +99,8 @@ public class ImageShowActivity extends BaseActivity {
                 screenshot.setImageDrawable(getResources().getDrawable(R.drawable.screenshot_un));
                 break;
             case R.id.screenshot:
+                intent.setClass(this,ImageCropActivity.class);
+                startActivityForResult(intent,toCrop);
                 brush.setImageDrawable(getResources().getDrawable(R.drawable.brush_un));
                 prettify.setImageDrawable(getResources().getDrawable(R.drawable.prettify_un));
                 text.setImageDrawable(getResources().getDrawable(R.drawable.text_un));
@@ -101,9 +113,7 @@ public class ImageShowActivity extends BaseActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode==toBrush){
-            bitmap=getBitmap();
-            Glide.with(this).load(bitmap).into(img_show);
-        }
+        bitmap=getBitmap();
+        Glide.with(this).load(bitmap).into(img_show);
     }
 }

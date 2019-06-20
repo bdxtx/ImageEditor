@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-package cn.jarlen.photoedit.enhance;
+package com.ganjie.image_editor;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -28,9 +28,9 @@ import android.graphics.Paint;
 public class PhotoEnhance
 {
 
+	public final int Enhance_Saturation = 0;
 	public final int Enhance_Brightness = 1;
 	public final int Enhance_Contrast = 2;
-	public final int Enhance_Saturation = 3;
 
 	private Bitmap mBitmap;
 
