@@ -77,9 +77,19 @@ public class MainActivity extends BaseActivity {
 //                    params.mSupportScaleItem = true;
 //                    // 启动涂鸦页面
 //                    ImageEditActivity.startActivityForResult(MainActivity.this, params, REQ_CODE_DOODLE);
-                    Intent intent=new Intent(this,ImageShowActivity.class);
+
+
+
+//                    Intent intent=new Intent(this,ImageShowActivity.class);
+//                    intent.putExtra("imgUrl",imgUrl);
+//                    startActivityForResult(intent,IMAGE_EDIT);
+
+
+
+                    Intent intent=new Intent(this,ImageControlActivity.class);
                     intent.putExtra("imgUrl",imgUrl);
                     startActivityForResult(intent,IMAGE_EDIT);
+
                 }
                 break;
             case R.id.img_photo:
