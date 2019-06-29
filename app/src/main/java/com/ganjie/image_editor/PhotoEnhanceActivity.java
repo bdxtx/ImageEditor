@@ -25,7 +25,7 @@ public class PhotoEnhanceActivity extends BaseActivity {
     @BindView(R.id.enhancePicture)
     ImageView enhancePicture;
     private int selectPicControl;
-    public final int DEFAULT_PROGRESS = 101;
+    public final int DEFAULT_PROGRESS = 128;
     private PhotoEnhance pe;
     private Bitmap bitmap;
     private Bitmap thisBitmap;
@@ -60,7 +60,20 @@ public class PhotoEnhanceActivity extends BaseActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                pe.setSaturation(progress);
+                switch (selectPicControl){
+                    case 1:
+                        pe.setBrightness(progress);
+                        break;
+                    case 2:
+                        pe.setContrast(progress);
+                        break;
+                    case 3:
+                        pe.setSaturation(progress);
+                        break;
+                    case 4:
+                        pe.setBrightness(progress);
+                        break;
+                }
                 thisBitmap = pe.handleImage(selectPicControl);
                 Glide.with(PhotoEnhanceActivity.this).load(thisBitmap).into(enhancePicture);
             }
@@ -73,20 +86,23 @@ public class PhotoEnhanceActivity extends BaseActivity {
             case R.id.pic_one:
                 pic_control.setVisibility(View.VISIBLE);
                 tv_pic_text.setText("亮度");
+                enhance_seekbar.setMax(255);
                 enhance_seekbar.setProgress(DEFAULT_PROGRESS);
-                selectPicControl=1;
+                selectPicControl=pe.Enhance_Brightness;
                 break;
             case R.id.pic_two:
                 pic_control.setVisibility(View.VISIBLE);
                 tv_pic_text.setText("对比度");
+                enhance_seekbar.setMax(255);
                 enhance_seekbar.setProgress(DEFAULT_PROGRESS);
-                selectPicControl=2;
+                selectPicControl=pe.Enhance_Contrast;
                 break;
             case R.id.pic_three:
                 pic_control.setVisibility(View.VISIBLE);
                 tv_pic_text.setText("饱和度");
+                enhance_seekbar.setMax(255);
                 enhance_seekbar.setProgress(DEFAULT_PROGRESS);
-                selectPicControl=3;
+                selectPicControl=pe.Enhance_Saturation;
                 break;
             case R.id.pic_four:
                 pic_control.setVisibility(View.VISIBLE);
@@ -99,7 +115,7 @@ public class PhotoEnhanceActivity extends BaseActivity {
                 finish();
                 break;
             case R.id.pic_cancel:
-                finish();
+                pic_control.setVisibility(View.GONE);
                 break;
         }
     }

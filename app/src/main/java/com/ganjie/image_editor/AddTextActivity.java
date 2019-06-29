@@ -2,6 +2,7 @@ package com.ganjie.image_editor;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -28,6 +29,7 @@ import cn.hzw.doodle.core.IDoodleItemListener;
 import cn.hzw.doodle.core.IDoodlePen;
 import cn.hzw.doodle.core.IDoodleSelectableItem;
 import cn.hzw.doodle.core.IDoodleTouchDetector;
+import cn.jarlen.photoedit.crop.Handle;
 
 public class AddTextActivity extends BaseActivity implements TextDialog.OnclickListener {
     @BindView(R.id.doodle_container)
@@ -155,7 +157,15 @@ public class AddTextActivity extends BaseActivity implements TextDialog.OnclickL
 
         mDoodle.setIsDrawableOutside(false);
         mFrameLayout.addView(mDoodleView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                TextDialog textDialog=new TextDialog(AddTextActivity.this,AddTextActivity.this);
+                textDialog.showAtLocation(edit_bg, Gravity.BOTTOM,0,0);
+            }
+        },500);
     }
+
 
     @Override
     public void sure(Bitmap bitmap) {

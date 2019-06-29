@@ -80,15 +80,15 @@ public class MainActivity extends BaseActivity {
 
 
 
-//                    Intent intent=new Intent(this,ImageShowActivity.class);
+                    Intent intent=new Intent(this,ImageShowActivity.class);
+                    intent.putExtra("imgUrl",imgUrl);
+                    startActivityForResult(intent,ACTION_REQUEST_EDITIMAGE);
+
+
+//
+//                    Intent intent=new Intent(this,ImageControlActivity.class);
 //                    intent.putExtra("imgUrl",imgUrl);
 //                    startActivityForResult(intent,IMAGE_EDIT);
-
-
-
-                    Intent intent=new Intent(this,ImageControlActivity.class);
-                    intent.putExtra("imgUrl",imgUrl);
-                    startActivityForResult(intent,IMAGE_EDIT);
 
                 }
                 break;
@@ -167,16 +167,16 @@ public class MainActivity extends BaseActivity {
             }
         }
         if (requestCode==ACTION_REQUEST_EDITIMAGE){
-            String newFilePath = data.getStringExtra(EditImageActivity.SAVE_FILE_PATH);
-            boolean isImageEdit = data.getBooleanExtra(EditImageActivity.IMAGE_IS_EDIT, false);
-
-            if (isImageEdit) {
+            String newFilePath = data.getStringExtra("key_image_path");
+//            boolean isImageEdit = data.getBooleanExtra(EditImageActivity.IMAGE_IS_EDIT, false);
+//
+//            if (isImageEdit) {
                 Toast.makeText(this, "保存到路径: "+newFilePath, Toast.LENGTH_LONG).show();
-            } else {
-                newFilePath = imgUrl;
-            }
+//            } else {
+//                newFilePath = imgUrl;
+//            }
             //System.out.println("newFilePath---->" + newFilePath);
-            Log.d("image is edit", isImageEdit + "");
+//            Log.d("image is edit", isImageEdit + "");
             Glide.with(this).load(newFilePath).into(img_show);
 //            LoadImageTask loadTask = new LoadImageTask();
 //            loadTask.execute(newFilePath);

@@ -71,7 +71,7 @@ public class MosaicActivity extends BaseActivity {
             public void onReady(IDoodle doodle) {
 
                 // 设置初始值
-                mDoodle.setSize(10);//画笔粗细
+                mDoodle.setSize(150);//画笔粗细
                 // 选择画笔
                 mDoodle.setPen(DoodlePen.MOSAIC);
                 mDoodle.setShape(DoodleShape.HAND_WRITE);
