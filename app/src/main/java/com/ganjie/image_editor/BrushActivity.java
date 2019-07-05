@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -51,6 +52,8 @@ public class BrushActivity extends BaseActivity {
     ImageView btn_hand_write;
     @BindView(R.id.btn_holl_circle)
     ImageView btn_holl_circle;
+    @BindView(R.id.tv_edit)
+    TextView tv_edit;
     private IDoodle mDoodle;
     private DoodleView mDoodleView;
     private DoodleOnTouchGestureListener mTouchGestureListener;
@@ -155,7 +158,7 @@ public class BrushActivity extends BaseActivity {
         mFrameLayout.addView(mDoodleView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
     }
     @OnClick({R.id.color_selector,R.id.img_white,R.id.img_black,R.id.img_red,R.id.img_yellow,R.id.img_green,R.id.img_blue,R.id.img_purple,R.id.img_pink,R.id.return_last,R.id.pic_cancel,R.id.pic_sure,
-    R.id.btn_arrow,R.id.btn_holl_rect,R.id.btn_holl_circle,R.id.btn_hand_write})
+    R.id.btn_arrow,R.id.btn_holl_rect,R.id.btn_holl_circle,R.id.btn_hand_write,R.id.tv_edit})
     public void onClick(View view){
         switch (view.getId()){
             case R.id.color_selector:
@@ -249,6 +252,14 @@ public class BrushActivity extends BaseActivity {
                 btn_arrow.setImageDrawable(getResources().getDrawable(R.drawable.arrow_un));
                 btn_holl_circle.setImageDrawable(getResources().getDrawable(R.drawable.circular_un));
                 btn_holl_rect.setImageDrawable(getResources().getDrawable(R.drawable.rectangle_un));
+                break;
+            case R.id.tv_edit:
+                mDoodleView.setEditMode(!mDoodleView.isEditMode());
+                if (mDoodleView.isEditMode()){
+                    tv_edit.setTextColor(getResources().getColor(R.color.blue_mine));
+                }else {
+                    tv_edit.setTextColor(getResources().getColor(R.color.black));
+                }
                 break;
         }
     }

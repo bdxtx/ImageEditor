@@ -5,6 +5,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".BrushActivity">
+    <TextView
+        android:id="@+id/tv_edit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="编辑"
+        android:textSize="@dimen/sp_14"
+        android:textColor="#000"
+        android:layout_alignParentRight="true"
+        android:padding="@dimen/dp_10"/>
     <FrameLayout
         android:id="@+id/doodle_container"
         android:layout_width="@dimen/dp_375"

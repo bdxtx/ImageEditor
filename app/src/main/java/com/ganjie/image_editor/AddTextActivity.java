@@ -173,7 +173,7 @@ public class AddTextActivity extends BaseActivity implements TextDialog.OnclickL
         mDoodle.addItem(item);
         mTouchGestureListener.setSelectedItem(item);
     }
-    @OnClick({R.id.tv_add,R.id.pic_sure,R.id.pic_cancel})
+    @OnClick({R.id.tv_add,R.id.pic_sure,R.id.pic_cancel,R.id.tv_delete})
     public void onClick(View view){
         switch (view.getId()){
             case R.id.tv_add:
@@ -185,6 +185,10 @@ public class AddTextActivity extends BaseActivity implements TextDialog.OnclickL
                 break;
             case R.id.pic_cancel:
                 finish();
+                break;
+            case R.id.tv_delete:
+                mDoodle.removeItem(mTouchGestureListener.getSelectedItem());
+                mTouchGestureListener.setSelectedItem(null);
                 break;
         }
     }

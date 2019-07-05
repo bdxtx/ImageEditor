@@ -11,16 +11,16 @@
         android:layout_width="@dimen/dp_375"
         android:layout_height="@dimen/dp_375"
         android:layout_centerInParent="true"/>
-    <TextView
-        android:id="@+id/tv_add"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/dp_40"
-        android:text="点击输入文字"
-        android:textColor="@color/black"
-        android:textSize="20sp"
-        android:gravity="center"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="@dimen/dp_45"/>
+    <!--<TextView-->
+        <!--android:id="@+id/tv_add"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="@dimen/dp_40"-->
+        <!--android:text="点击输入文字"-->
+        <!--android:textColor="@color/black"-->
+        <!--android:textSize="20sp"-->
+        <!--android:gravity="center"-->
+        <!--android:layout_alignParentBottom="true"-->
+        <!--android:layout_marginBottom="@dimen/dp_45"/>-->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="@dimen/dp_40"
@@ -56,15 +56,14 @@
     <LinearLayout
         android:id="@+id/doodle_selectable_edit_container"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/dp_44"
+        android:layout_height="@dimen/dp_40"
         android:orientation="horizontal"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="@dimen/dp_5"
-        android:visibility="gone"
+        android:layout_marginBottom="@dimen/dp_45"
         android:gravity="center">
         <TextView
-            android:id="@+id/tv_edit"
-            android:text="编辑"
+            android:id="@+id/tv_add"
+            android:text="添加"
             android:textColor="@color/black"
             android:textSize="@dimen/dp_20"
             android:layout_width="0dp"
